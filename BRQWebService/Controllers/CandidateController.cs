@@ -15,10 +15,23 @@ namespace BRQWebService.Controllers
         public CandidateController(DataBaseContext context) 
             => _candidaterepository = new CandidateDao(context);
 
-        [HttpGet(Name = "GetCandidateByCertification")]
-        public IList<Candidate> Get([FromBody] IList<Certification> certifications)
+
+        [HttpGet("{cpf:long}", Name = "GetCandidateByCpf")]
+        public IList<Candidate> Get([FromHeader] long userCpf)
         {
-            return _candidaterepository.Select(certifications).GetAwaiter().GetResult();
+            return null;
+        }
+
+        [HttpGet("{email:string}", Name = "GetCandidateByEmail")]
+        public IList<Candidate> Get([FromHeader] string userEmail)
+        {
+            return null;
+        }
+
+        [HttpGet(Name = "GetCandidateBySkill")]
+        public IList<Candidate> Get([FromBody] IList<Skill> skills)
+        {
+            return _candidaterepository.Select(skills).GetAwaiter().GetResult();
         }
 
         [HttpPost(Name = "InsertCandidate")]
@@ -32,7 +45,7 @@ namespace BRQWebService.Controllers
                if (!(_candidaterepository.Insert(candidate).GetAwaiter().GetResult()))
                     return BadRequest(new { message = $"Não foi possível inserir o candidato." });
 
-                return Created(Request.GetEncodedUrl() + new Random().Next(), candidate);
+                return Created(Request.GetEncodedUrl(), candidate);
             }
             catch (Exception error)
             {
