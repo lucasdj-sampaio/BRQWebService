@@ -26,14 +26,30 @@ namespace BRQWebService.Repository
             }
         }
 
-        public async Task<IList<Candidate>> Select(IList<Certification> certifications)
+        public IList<Candidate> Select(SearchCondition condition)
         {
-            return null;
-        }
+            var searched = _context.DbCandidates
+                .Where(c => (condition.Cpf == 0 || c.Cpf == condition.Cpf) && 
+                    (condition.Email == null || c.Email == condition.Email) &&
+                    (condition.Name == null || c.Name == condition.Name) &&
+                    (condition.Skill == null 
+                        || c.SkillCollection.Any(a => a.SkillName == condition.Skill)) &&
+                    (condition.Certification == null 
+                        || c.CertificationCollection.Any(a => a.CertificationName == condition.Certification)))
+                .ToList<Candidate>();
 
-        public async Task<IList<Candidate>> Select(IList<Skill> skills) 
-        {
-            return null;
+            foreach (var candidate in searched)
+            {
+                candidate.SkillCollection = _context.DbSkill
+                        .Where(s => s.CandidateKey == candidate.Cpf)
+                        .ToList<Skill>();
+
+                candidate.CertificationCollection = _context.DbCertification
+                    .Where(c => c.CandidateKey == candidate.Cpf)
+                    .ToList<Certification>();
+            }
+
+            return searched;
         }
     }
 }

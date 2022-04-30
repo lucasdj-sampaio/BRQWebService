@@ -16,22 +16,22 @@ namespace BRQWebService.Controllers
             => _candidaterepository = new CandidateDao(context);
 
 
-        [HttpGet("{cpf:long}", Name = "GetCandidateByCpf")]
-        public IList<Candidate> Get([FromHeader] long userCpf)
+        [HttpGet(Name = "GetCandidate")]
+        public ActionResult<IList<Candidate>> Get([FromQuery] SearchCondition condition)
         {
-            return null;
-        }
+            try
+            {
+                var candidates = _candidaterepository.Select(condition);
 
-        [HttpGet("{email:string}", Name = "GetCandidateByEmail")]
-        public IList<Candidate> Get([FromHeader] string userEmail)
-        {
-            return null;
-        }
+                if (candidates.Count == 0)
+                    return NoContent();
 
-        [HttpGet(Name = "GetCandidateBySkill")]
-        public IList<Candidate> Get([FromBody] IList<Skill> skills)
-        {
-            return _candidaterepository.Select(skills).GetAwaiter().GetResult();
+                return Ok(candidates);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest(new { message = $"Não foi possível retornar os dados. ({ex.Message})" });
+            }
         }
 
         [HttpPost(Name = "InsertCandidate")]
